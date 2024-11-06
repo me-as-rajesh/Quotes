@@ -1,0 +1,36 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter the text:"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/editTextCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="text in something, quotes, and lyrics messages..."
+        android:gravity="top"
+        android:minHeight="100dp" />
+
+    <Button
+        android:id="@+id/btnPaste"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Paste here"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="220dp"/>
+
+    <Button
+        android:id="@+id/btnCreateCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="400dp"
+        android:text="Create the Card" />
+
+</LinearLayout>
