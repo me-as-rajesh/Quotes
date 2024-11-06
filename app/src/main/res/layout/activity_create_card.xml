@@ -1,36 +1,90 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:src="@drawable/ic_launcher_background"
+        android:scaleType="fitXY"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter the text:"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/imageView"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
 
     <EditText
         android:id="@+id/editTextCard"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="text in something, quotes, and lyrics messages..."
+        android:hint="Text in something, quotes, and lyrics messages..."
         android:gravity="top"
-        android:minHeight="100dp" />
+        android:minHeight="50dp"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/btnPaste"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Paste here"
+        app:layout_constraintEnd_toStartOf="@+id/btnlyrics"
+        app:layout_constraintTop_toBottomOf="@id/editTextCard"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="220dp"/>
+        android:layout_marginEnd="50dp" />
 
     <Button
-        android:id="@+id/btnCreateCard"
-        android:layout_width="match_parent"
+        android:id="@+id/btnlyrics"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="400dp"
-        android:text="Create the Card" />
+        android:text="Song lyrics"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextCard"
+        android:layout_marginTop="20dp" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/opacityLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Opacity"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnlyrics"
+        android:layout_marginTop="16dp" />
+
+    <SeekBar
+        android:id="@+id/seekBarOpacity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        app:layout_constraintTop_toBottomOf="@id/opacityLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnPreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Preview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/seekBarOpacity"
+        android:layout_marginTop="50dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

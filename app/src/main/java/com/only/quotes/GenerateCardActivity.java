@@ -98,9 +98,8 @@ public class GenerateCardActivity extends AppCompatActivity {
     }
 
     private void onImageSelected(String imageUrl) {
-        Intent intent = new Intent(this, PreviewActivity.class);
+        Intent intent = new Intent(this, CreateCardActivity.class);
         intent.putExtra("imageUrl", imageUrl);
-        intent.putExtra("cardText", getIntent().getStringExtra("cardText"));
         startActivity(intent);
     }
 }

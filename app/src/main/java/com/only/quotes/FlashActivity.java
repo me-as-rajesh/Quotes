@@ -14,7 +14,7 @@ public class FlashActivity extends AppCompatActivity {
 
 
         new Handler().postDelayed(() -> {
-            Intent intent = new Intent(FlashActivity.this, CreateCardActivity.class);
+            Intent intent = new Intent(FlashActivity.this, GenerateCardActivity.class);
             startActivity(intent);
             finish();
         }, 3000);
