@@ -6,11 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import com.bumptech.glide.Glide;
 
 import java.io.FileOutputStream;
@@ -32,38 +28,25 @@ public class PreviewActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.saveButton);
 
         String imageUrl = getIntent().getStringExtra("imageUrl");
-        String cardText = getIntent().getStringExtra("cardText");
 
         Glide.with(this)
                 .asBitmap()
                 .load(imageUrl)
                 .into(previewImage);
 
-        previewImage.post(() -> generateCardWithText(cardText));
+        previewImage.post(() -> {
+            // Capture the loaded image as a bitmap for sharing and saving
+            previewImage.buildDrawingCache();
+            cardBitmap = previewImage.getDrawingCache().copy(Bitmap.Config.ARGB_8888, true);
+            previewImage.setImageBitmap(cardBitmap);
+        });
 
         setupButtons();
     }
 
-    private void generateCardWithText(String cardText) {
-        previewImage.buildDrawingCache();
-        Bitmap bitmap = previewImage.getDrawingCache();
-        Bitmap cardBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Canvas canvas = new Canvas(cardBitmap);
-
-        Paint textPaint = new Paint();
-        textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(40);
-        textPaint.setAntiAlias(true);
-
-        canvas.drawText(cardText, 50, cardBitmap.getHeight() - 100, textPaint);
-
-        previewImage.setImageBitmap(cardBitmap);
-
-        this.cardBitmap = cardBitmap;
-    }
-
     private void setupButtons() {
         shareButton.setOnClickListener(v -> shareImage(null));
+
         saveButton.setOnClickListener(v -> saveImage(cardBitmap));
     }
 
@@ -86,12 +69,13 @@ public class PreviewActivity extends AppCompatActivity {
 
     private String saveImage(Bitmap bitmap) {
         String path = getExternalFilesDir(null) + "/shared_image.png";
-        // Logic to save the bitmap to the file system
+
         try (FileOutputStream out = new FileOutputStream(path)) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return path;
     }
 }
