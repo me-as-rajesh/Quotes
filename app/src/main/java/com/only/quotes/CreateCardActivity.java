@@ -1,140 +1,180 @@
 package com.only.quotes;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Environment;
+import android.provider.MediaStore;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.content.ContextCompat;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-//import com.github.duanhong169.colorpicker.ColorPicker;
-//import com.github.duanhong169.colorpicker.OnColorChangedListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.io.File;
+import java.io.IOException;
+import ja.burhanrashid52.photoeditor.PhotoEditor;
+import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.SaveSettings;
 
-public class CreateCardActivity extends AppCompatActivity {
+public class CreateCardActivity extends AppCompatActivity implements View.OnClickListener, StickerBSFragment.StickerListener {
 
-    private EditText editTextCard;
-    private SeekBar seekBarOpacity;
-    private TextView opacityLabel;
-    private Button btnPaste;
-    private Button btnLyrics;
-    private Button btnPreview;
-    private Button btnColorPicker;  // New button for color picker
-    private ImageView imageView;
-    private static final int REQUEST_CODE_LYRICS = 1;
-    private String imageUrl;
-    private float currentOpacity = 1.0f;
+    ImageView imagePhotoEditBack, imagePhotoEditUndo, imagePhotoEditRedo,
+            imagePhotoEditCrop, imagePhotoEditSticker, imagePhotoEditText, imagePhotoEditPaint;
+    VerticalSlideColorPicker colorPickerView;
+    PhotoEditorView photoEditorView;
+    FloatingActionButton fabPhotoDone;
+
+    private PhotoEditor mPhotoEditor;
+    private StickerBSFragment mStickerBSFragment;
+    private int mSelectedColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_card);
 
-        // Initialize UI components
-        editTextCard = findViewById(R.id.editTextCard);
-        btnPaste = findViewById(R.id.btnPaste);
-        btnLyrics = findViewById(R.id.btnlyrics);
-        btnPreview = findViewById(R.id.btnPreview);
-        btnColorPicker = findViewById(R.id.btnColorPicker);  // Initialize the color picker button
-        opacityLabel = findViewById(R.id.opacityLabel);
-        seekBarOpacity = findViewById(R.id.seekBarOpacity);
-        imageView = findViewById(R.id.imageView);
+        imagePhotoEditBack = findViewById(R.id.img_photo_edit_back);
+        imagePhotoEditUndo = findViewById(R.id.img_photo_edit_undo);
+        imagePhotoEditRedo = findViewById(R.id.img_photo_edit_redo);
+        imagePhotoEditCrop = findViewById(R.id.img_photo_edit_crop);
+        imagePhotoEditSticker = findViewById(R.id.img_photo_edit_stickers);
+        imagePhotoEditText = findViewById(R.id.img_photo_edit_text);
+        imagePhotoEditPaint = findViewById(R.id.img_photo_edit_paint);
 
-        // Get image URL from intent and load image
-        imageUrl = getIntent().getStringExtra("imageUrl");
-        loadImage(imageUrl);
+        photoEditorView = findViewById(R.id.photo_editor_view);
+        fabPhotoDone = findViewById(R.id.fab_photo_done);
 
-        // Set listeners for buttons
-        btnPaste.setOnClickListener(v -> pasteFromClipboard());
-        btnLyrics.setOnClickListener(v -> {
-            Intent intent = new Intent(CreateCardActivity.this, LyricsActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_LYRICS);
+        mPhotoEditor = new PhotoEditor.Builder(this, photoEditorView)
+                .setPinchTextScalable(true)
+                .build();
+
+        colorPickerView = findViewById(R.id.color_picker_view);
+        colorPickerView.setOnColorChangeListener(selectedColor -> {
+            mSelectedColor = selectedColor;
+            if (colorPickerView.getVisibility() == View.VISIBLE) {
+                imagePhotoEditPaint.setBackgroundColor(selectedColor);
+                mPhotoEditor.setBrushColor(selectedColor);
+            }
         });
 
-        // Set up opacity seekbar
-        setupOpacitySeekBar();
+        // Set OnClickListeners
+        imagePhotoEditBack.setOnClickListener(this);
+        imagePhotoEditUndo.setOnClickListener(this);
+        imagePhotoEditRedo.setOnClickListener(this);
+        imagePhotoEditCrop.setOnClickListener(this);
+        imagePhotoEditSticker.setOnClickListener(this);
+        imagePhotoEditText.setOnClickListener(this);
+        imagePhotoEditPaint.setOnClickListener(this);
+        fabPhotoDone.setOnClickListener(this);
 
-        // Set preview button listener
-        btnPreview.setOnClickListener(v -> openPreview());
+        mStickerBSFragment = new StickerBSFragment();
+        mStickerBSFragment.setStickerListener(this);
 
-        // Set color picker button listener
-        btnColorPicker.setOnClickListener(v -> openColorPicker());
+        String imageUrl = getIntent().getStringExtra("imageUrl");
+        Glide.with(this)
+                .load(imageUrl)
+                .into(photoEditorView.getSource());
+/*        try {
+
+            Uri imageUri = Uri.parse(imageUrl);
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            photoEditorView.getSource().setImageBitmap(bitmap);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
-
-    private void openColorPicker() {
-//        ColorPicker colorPicker = new ColorPicker(this);
-//        colorPicker.setOnColorChangedListener(new OnColorChangedListener() {
-//            @Override
-//            public void onColorChanged(int color) {
-//                // Change the text color of the EditText
-//                editTextCard.setTextColor(color);
-//                Toast.makeText(CreateCardActivity.this, "Selected Color: #" + Integer.toHexString(color), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        // Show the color picker dialog
-//        colorPicker.show();
-    }
-
-    private void loadImage(String url) {
-        if (url != null) {
-            Glide.with(this)
-                    .load(url)
-                    .apply(new RequestOptions().placeholder(R.drawable.ic_launcher_background))
-                    .into(imageView);
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.img_photo_edit_back) {
+            finish();
+        } else if (id == R.id.img_photo_edit_undo) {
+            mPhotoEditor.undo();
+        } else if (id == R.id.img_photo_edit_redo) {
+            mPhotoEditor.redo();
+        } else if (id == R.id.img_photo_edit_crop) {
+            // Handle crop action
+        } else if (id == R.id.img_photo_edit_stickers) {
+            ShowBrush(false);
+            mStickerBSFragment.show(getSupportFragmentManager(), mStickerBSFragment.getTag());
+        } else if (id == R.id.img_photo_edit_text) {
+            ShowBrush(false);
+            TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
+            textEditorDialogFragment.setOnTextEditorListener((inputText, colorCode) -> {
+                mPhotoEditor.addText(inputText, colorCode);
+            });
+        } else if (id == R.id.img_photo_edit_paint) {
+            if (colorPickerView.getVisibility() == View.VISIBLE) {
+                ShowBrush(false);
+            } else {
+                ShowBrush(true);
+            }
+        } else if (id == R.id.fab_photo_done) {
+            saveImage();
         }
     }
 
-    private void pasteFromClipboard() {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboard != null && clipboard.hasPrimaryClip()) {
-            ClipData clip = clipboard.getPrimaryClip();
-            if (clip != null && clip.getItemCount() > 0) {
-                editTextCard.setText(clip.getItemAt(0).getText());
-            }
-        }
-    }
-
-    private void setupOpacitySeekBar() {
-        seekBarOpacity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentOpacity = progress / 100f;
-                opacityLabel.setText("Opacity: " + progress + "%");
-                imageView.setAlpha(currentOpacity);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-    }
-
-    private void openPreview() {
-        Intent intent = new Intent(CreateCardActivity.this, PreviewActivity.class);
-        intent.putExtra("imageUrl", imageUrl);
-        startActivity(intent);
-    }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_LYRICS && resultCode == RESULT_OK && data != null) {
-            String selectedLyrics = data.getStringExtra("selectedLyrics");
-            if (selectedLyrics != null) {
-                editTextCard.setText(selectedLyrics);
-            }
+    public void onStickerClick(Bitmap bitmap) {
+        mPhotoEditor.addImage(bitmap);
+    }
+
+    private void ShowBrush(boolean enableBrush) {
+        if (enableBrush) {
+            mPhotoEditor.setBrushColor(mSelectedColor);
+            imagePhotoEditPaint.setBackgroundColor(mSelectedColor);
+            mPhotoEditor.setBrushDrawingMode(true);
+            colorPickerView.setVisibility(View.VISIBLE);
+        } else {
+            imagePhotoEditPaint.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
+            mPhotoEditor.setBrushDrawingMode(false);
+            colorPickerView.setVisibility(View.INVISIBLE);
         }
     }
+
+    @SuppressLint("MissingPermission")
+    private void saveImage() {
+        File folder = new File(Environment.getExternalStorageDirectory() + "/PhotoEditing");
+        if (!folder.isDirectory()) {
+            folder.mkdirs();
+        }
+
+        File file = new File(folder, System.currentTimeMillis() + ".png");
+
+        try {
+            file.createNewFile();
+
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
+
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    Toast.makeText(CreateCardActivity.this, "Image Saved Successfully", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK, new Intent().putExtra("imagePath", imagePath));
+                    finish();
+                }
+
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    Toast.makeText(CreateCardActivity.this, "Failed to save Image", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 }

@@ -2,24 +2,24 @@ package com.only.quotes;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
+import android.text.TextWatcher;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.util.Scanner;
 
 public class GenerateCardActivity extends AppCompatActivity {
 
@@ -29,7 +29,7 @@ public class GenerateCardActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private List<String> imageUrls;
 
-    private static final String API_URL = "https://lexica.art/api/v1/search?q=";
+    private static final String API_URL = "https://lexica.art/api/infinite-prompts";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,42 +40,82 @@ public class GenerateCardActivity extends AppCompatActivity {
         searchButton = findViewById(R.id.searchButton);
         recyclerView = findViewById(R.id.recyclerView);
 
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(4, StaggeredGridLayoutManager.VERTICAL));
         imageUrls = new ArrayList<>();
         imageAdapter = new ImageAdapter(imageUrls, this::onImageSelected);
         recyclerView.setAdapter(imageAdapter);
 
+        searchBar.setHint("Search for images");
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+                // No need to implement this
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
+                if (charSequence.length() == 0) {
+                    clearImages();
+                }
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
         searchButton.setOnClickListener(v -> {
-            String searchTerm = searchBar.getText().toString();
+            String searchTerm = searchBar.getText().toString().trim();
             if (!searchTerm.isEmpty()) {
-                new Thread(() -> searchForImages(searchTerm)).start();
+                new Thread(() -> fetchImages(searchTerm)).start();
             } else {
                 Toast.makeText(this, "Please enter a search term!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void searchForImages(String searchTerm) {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(API_URL + searchTerm)
-                .build();
-
+    private void fetchImages(String searchTerm) {
         try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                String responseBody = response.body().string();
-                List<String> urls = parseImageUrlsFromJson(responseBody);
+            // Prepare JSON request body
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("text", searchTerm);
+            requestBody.put("model", "lexica-aperture-v3.5");
+            requestBody.put("searchMode", "images");
+            requestBody.put("source", "search");
+            requestBody.put("cursor", 0);
 
+            // Create connection
+            HttpURLConnection connection = (HttpURLConnection) new URL(API_URL).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            // Send request body
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(requestBody.toString().getBytes());
+                os.flush();
+            }
+
+            // Check response
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Read response
+                Scanner scanner = new Scanner(connection.getInputStream());
+                StringBuilder response = new StringBuilder();
+                while (scanner.hasNext()) {
+                    response.append(scanner.nextLine());
+                }
+                scanner.close();
+
+                // Parse JSON response
+                List<String> urls = parseImageUrlsFromJson(response.toString());
                 runOnUiThread(() -> {
                     imageUrls.clear();
                     imageUrls.addAll(urls);
                     imageAdapter.notifyDataSetChanged();
                 });
             } else {
-                runOnUiThread(() -> Toast.makeText(this, "Failed to fetch images. Response code: " + response.code(), Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, "Failed to fetch images. Code: " + responseCode, Toast.LENGTH_SHORT).show());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             runOnUiThread(() -> Toast.makeText(this, "An error occurred: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }
@@ -85,11 +125,18 @@ public class GenerateCardActivity extends AppCompatActivity {
         List<String> urls = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(jsonResponse);
-            JSONArray imagesArray = jsonObject.getJSONArray("images");
-            for (int i = 0; i < imagesArray.length(); i++) {
-                JSONObject item = imagesArray.getJSONObject(i);
-                String url = item.getString("srcSmall");
-                urls.add(url);
+            JSONArray prompts = jsonObject.getJSONArray("prompts");
+
+            for (int i = 0; i < prompts.length(); i++) {
+                JSONObject prompt = prompts.getJSONObject(i);
+                JSONArray images = prompt.getJSONArray("images");
+
+                for (int j = 0; j < images.length(); j++) {
+                    JSONObject image = images.getJSONObject(j);
+                    String imageId = image.getString("id");
+                    String link = "https://image.lexica.art/full_webp/" + imageId;
+                    urls.add(link);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -101,5 +148,10 @@ public class GenerateCardActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CreateCardActivity.class);
         intent.putExtra("imageUrl", imageUrl);
         startActivity(intent);
+    }
+    private void clearImages() {
+        imageUrls.clear();
+        imageAdapter.notifyDataSetChanged();
+        searchBar.setHint("Search glass");
     }
 }

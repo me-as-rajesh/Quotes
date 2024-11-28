@@ -1,103 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="@color/black">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/imageView"
-        android:layout_width="0dp"
-        android:layout_height="400dp"
-        android:src="@drawable/ic_launcher_background"
-        android:scaleType="fitXY"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/toolbar_photo_edit"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter the text:"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/imageView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="5dp" />
+        android:padding="10dp">
 
-    <EditText
-        android:id="@+id/editTextCard"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:gravity="top"
-        android:hint="Type quotes, lyrics and messages..."
-        android:minHeight="20dp"
-        app:layout_constraintEnd_toStartOf="@+id/btnColorPicker"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/img_photo_edit_back"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_cam_back" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true">
 
-    <Button
-        android:id="@+id/btnColorPicker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:backgroundTint="@android:color/holo_blue_light"
-        android:text="Pick Color"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_undo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_undo" />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_redo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_redo" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnPaste"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Paste here"
-        app:layout_constraintEnd_toStartOf="@+id/btnlyrics"
-        app:layout_constraintTop_toBottomOf="@id/editTextCard"
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_crop"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_cam_crop_rotate"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_stickers"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_cam_sticker" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_text"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_cam_text" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_photo_edit_paint"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_cam_draw" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <ja.burhanrashid52.photoeditor.PhotoEditorView
+        android:id="@+id/photo_editor_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar_photo_edit" />
+
+    <com.only.quotes.VerticalSlideColorPicker
+        android:id="@+id/color_picker_view"
+        android:layout_width="13dp"
+        android:layout_height="250dp"
+        android:layout_below="@+id/toolbar_photo_edit"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="50dp" />
+        android:layout_marginEnd="25dp"
+        android:visibility="invisible"
+        app:defaultColor="@color/colorPrimary" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnlyrics"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_photo_done"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Song lyrics"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextCard"
-        android:layout_marginTop="10dp" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="25dp"
+        android:src="@drawable/ic_done"
+        app:backgroundTint="@color/colorPrimary" />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/opacityLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Opacity"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnlyrics"
-        android:layout_marginTop="16dp" />
-
-    <androidx.appcompat.widget.AppCompatSeekBar
-        android:id="@+id/seekBarOpacity"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:max="100"
-        app:layout_constraintTop_toBottomOf="@id/opacityLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnPreview"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Preview"
-        android:background="@drawable/custombtn"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -62,5 +62,6 @@ dependencies {
 
     implementation 'com.android.volley:volley:1.2.1'
 
-
+    implementation 'com.burhanrashid52:photoeditor:3.0.2'
 }
+
